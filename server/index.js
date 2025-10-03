@@ -10,6 +10,7 @@ import generalRoutes from "./routes/generalRoutes.js";
 import clientRoutes from "./routes/clientRoutes.js";
 import managementRoutes from "./routes/managementRoutes.js";
 import salesRoutes from "./routes/salesRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 import Product from "./models/Product.js";
 import {
   dataAffiliateStat,
@@ -38,6 +39,7 @@ app.use(cors());
 app.use("/general", generalRoutes);
 app.use("/client", clientRoutes);
 app.use("/management", managementRoutes);
+app.use("/ai", aiRoutes);
 app.use("/sales", salesRoutes);
 
 // MONGOOSE SETUP
@@ -48,11 +50,11 @@ mongoose
     app.listen(PORT, () => {
       console.log(`Server running on port: ${PORT}`);
     });
-    Product.insertMany(dataProduct)
-    ProductStat.insertMany(dataProductStat);
-    Transaction.insertMany(dataTransaction);
-    OverallStat.insertMany(dataOverallStat);
-    AffiliateStat.insertMany(dataAffiliateStat);
+    // Product.insertMany(dataProduct)
+    // ProductStat.insertMany(dataProductStat);
+    // Transaction.insertMany(dataTransaction);
+    // OverallStat.insertMany(dataOverallStat);
+    // AffiliateStat.insertMany(dataAffiliateStat);
   })
   .catch((error) => {
     console.log(error.message);

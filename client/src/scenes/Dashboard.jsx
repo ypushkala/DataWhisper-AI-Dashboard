@@ -3,7 +3,10 @@ import FlexBetween from "@/components/FlexBetween";
 import Header from "@/components/Header";
 import OverviewChart from "@/components/OverviewChart";
 import StatBox from "@/components/StatBox";
-import { useGetDashboardQuery } from "@/state/api";
+import VoiceInterface from "@/components/VoiceInterface";
+import AIExplainedChart from "@/components/AIExplainedChart"; // Import AI wrapper
+import {useGetDashboardQuery} from "@/state/api";
+
 import {
   DownloadOutlined,
   Email,
@@ -11,38 +14,31 @@ import {
   PersonAdd,
   Traffic,
 } from "@mui/icons-material";
+
 import {
   Box,
   Button,
   Typography,
   useTheme,
   useMediaQuery,
+  Paper,
 } from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
 
-import { DataGrid } from "@mui/x-data-grid";
+import CircularProgress from "@mui/material/CircularProgress";
+import {DataGrid} from "@mui/x-data-grid";
+import {useState} from "react";
 
 function Dashboard() {
   const theme = useTheme();
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
-  const { data, isLoading } = useGetDashboardQuery();
+  const {data, isLoading} = useGetDashboardQuery();
+
+  const [aiInsights, setAiInsights] = useState([]);
 
   const columns = [
-    {
-      field: "_id",
-      headerName: "ID",
-      flex: 1,
-    },
-    {
-      field: "userId",
-      headerName: "User ID",
-      flex: 1,
-    },
-    {
-      field: "createdAt",
-      headerName: "CreatedAt",
-      flex: 1,
-    },
+    {field: "_id", headerName: "ID", flex: 1},
+    {field: "userId", headerName: "User ID", flex: 1},
+    {field: "createdAt", headerName: "CreatedAt", flex: 1},
     {
       field: "products",
       headerName: "# of Products",
@@ -74,9 +70,9 @@ function Dashboard() {
 
   return (
     <Box m="1.5rem 2.5rem">
+      {/* Top Header */}
       <FlexBetween>
         <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
-
         <Box>
           <Button
             sx={{
@@ -85,17 +81,101 @@ function Dashboard() {
               fontSize: "14px",
               fontWeight: "bold",
               padding: "10px 20px",
-              "&:hover": {
-                backgroundColor: theme.palette.secondary.light,
-              },
+              "&:hover": {backgroundColor: theme.palette.secondary.light},
             }}
           >
-            <DownloadOutlined sx={{ mr: "10px" }} />
+            <DownloadOutlined sx={{mr: "10px"}} />
             Download Reports
           </Button>
         </Box>
       </FlexBetween>
 
+      {/* Voice Interface */}
+      <VoiceInterface
+        onInsightReceived={(insight) => setAiInsights([insight, ...aiInsights])}
+      />
+
+      {/* Recent AI Insights */}
+      {aiInsights.length > 0 && (
+        <Box sx={{my: 3}}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{
+              color: theme.palette.secondary[100],
+              fontWeight: "bold",
+              mb: 2,
+            }}
+          >
+            🤖 Recent AI Insights
+          </Typography>
+          {aiInsights.slice(0, 3).map((insight, idx) => (
+            <Paper
+              key={idx}
+              elevation={2}
+              sx={{
+                p: 2.5,
+                mb: 2,
+                backgroundColor: theme.palette.background.alt,
+                border: `1px solid ${theme.palette.secondary[300]}`,
+                borderRadius: "0.55rem",
+                "&:hover": {
+                  backgroundColor: theme.palette.background.default,
+                  borderColor: theme.palette.secondary[200],
+                  transform: "translateY(-2px)",
+                  transition: "all 0.2s ease-in-out",
+                },
+              }}
+            >
+              <Box sx={{display: "flex", alignItems: "flex-start", gap: 2}}>
+                <Box
+                  sx={{
+                    backgroundColor: theme.palette.primary.main,
+                    borderRadius: "50%",
+                    p: 1,
+                    minWidth: 40,
+                    height: 40,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{color: "white", fontWeight: "bold"}}
+                  >
+                    AI
+                  </Typography>
+                </Box>
+                <Box sx={{flex: 1}}>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.secondary[100],
+                      lineHeight: 1.6,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    {insight}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: theme.palette.secondary[300],
+                      mt: 1,
+                      display: "block",
+                    }}
+                  >
+                    Generated {new Date().toLocaleTimeString()}
+                  </Typography>
+                </Box>
+              </Box>
+            </Paper>
+          ))}
+        </Box>
+      )}
+
+      {/* Grid Content */}
       <Box
         mt="20px"
         display="grid"
@@ -103,7 +183,7 @@ function Dashboard() {
         gridAutoRows="160px"
         gap="20px"
         sx={{
-          "& > div": { gridColumn: isNonMediumScreens ? undefined : "span 12" },
+          "& > div": {gridColumn: isNonMediumScreens ? undefined : "span 12"},
         }}
       >
         <StatBox
@@ -113,7 +193,7 @@ function Dashboard() {
           description="Since last month"
           icon={
             <Email
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
+              sx={{color: theme.palette.secondary[300], fontSize: "26px"}}
             />
           }
         />
@@ -124,7 +204,7 @@ function Dashboard() {
           description="Since last month"
           icon={
             <PointOfSale
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
+              sx={{color: theme.palette.secondary[300], fontSize: "26px"}}
             />
           }
         />
@@ -135,7 +215,9 @@ function Dashboard() {
           p="1rem"
           borderRadius="0.55rem"
         >
-          <OverviewChart view="sales" isDashboard={true} />
+          <AIExplainedChart title="Monthly Sales">
+            <OverviewChart view="sales" isDashboard={true} />
+          </AIExplainedChart>
         </Box>
         <StatBox
           title="Monthly Sales"
@@ -144,7 +226,7 @@ function Dashboard() {
           description="Since last month"
           icon={
             <PersonAdd
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
+              sx={{color: theme.palette.secondary[300], fontSize: "26px"}}
             />
           }
         />
@@ -155,47 +237,10 @@ function Dashboard() {
           description="Since last month"
           icon={
             <Traffic
-              sx={{ color: theme.palette.secondary[300], fontSize: "26px" }}
+              sx={{color: theme.palette.secondary[300], fontSize: "26px"}}
             />
           }
         />
-
-        <Box
-          gridColumn="span 8"
-          gridRow="span 3"
-          sx={{
-            "& .MuiDataGrid-root": {
-              border: "none",
-              borderRadius: "5rem",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: "none",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: theme.palette.background.alt,
-              color: theme.palette.secondary[100],
-              borderBottom: "none",
-            },
-            "& .MuiDataGrid-virtualScroller": {
-              backgroundColor: theme.palette.background.alt,
-            },
-            "& .MuiDataGrid-footerContainer": {
-              backgroundColor: theme.palette.background.alt,
-              color: theme.palette.secondary[100],
-              borderTop: "none",
-            },
-            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-              color: `${theme.palette.secondary[200]} !important`,
-            },
-          }}
-        >
-          <DataGrid
-            loading={isLoading || !data}
-            getRowId={(row) => row._id}
-            rows={(data && data.transactions) || []}
-            columns={columns}
-          />
-        </Box>
         <Box
           gridColumn="span 4"
           gridRow="span 3"
@@ -203,18 +248,34 @@ function Dashboard() {
           p="1.5rem"
           borderRadius="0.55rem"
         >
-          <Typography variant="h6" sx={{ color: theme.palette.secondary[100] }}>
+          <Typography variant="h6" sx={{color: theme.palette.secondary[100]}}>
             Sales By Category
           </Typography>
-          <BreakdownChart isDashboard={true} />
+          <AIExplainedChart title="Sales By Category">
+            <BreakdownChart isDashboard={true} />
+          </AIExplainedChart>
           <Typography
             p="0 0.6rem"
             fontSize="0.8rem"
-            sx={{ color: theme.palette.secondary[200] }}
+            sx={{color: theme.palette.secondary[200]}}
           >
             Breakdown of real states and information via category for revenue
             made for this year and total sales.
           </Typography>
+        </Box>
+        <Box
+          gridColumn="span 12"
+          gridRow="span 3"
+          backgroundColor={theme.palette.background.alt}
+          borderRadius="0.55rem"
+          p="1rem"
+        >
+          <DataGrid
+            loading={isLoading || !data}
+            getRowId={(row) => row._id}
+            rows={(data && data.transactions) || []}
+            columns={columns}
+          />
         </Box>
       </Box>
     </Box>
